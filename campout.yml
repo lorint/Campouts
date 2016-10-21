@@ -1,0 +1,5 @@
+---
+- !ruby/object:Campout
+  location: The Lake District
+- !ruby/object:Campout
+  location: Southampton

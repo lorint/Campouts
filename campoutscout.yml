@@ -1,0 +1,10 @@
+---
+- !ruby/object:CampoutScout
+  scout: !ruby/object:Scout
+    name: Sally
+  campout: &1 !ruby/object:Campout
+    location: Southampton
+- !ruby/object:CampoutScout
+  scout: !ruby/object:Scout
+    name: Fred
+  campout: *1

@@ -1,0 +1,18 @@
+---
+- !ruby/object:Activity
+  name: Waterskiing
+  campout: &1 !ruby/object:Campout
+    location: The Lake District
+- !ruby/object:Activity
+  name: Fishing
+  campout: *1
+- !ruby/object:Activity
+  name: Capture the Flag
+  campout: *1
+- !ruby/object:Activity
+  name: Snorkeling
+  campout: &2 !ruby/object:Campout
+    location: Southampton
+- !ruby/object:Activity
+  name: Beach Volleyball
+  campout: *2

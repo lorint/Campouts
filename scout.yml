@@ -1,0 +1,7 @@
+---
+- !ruby/object:Scout
+  name: Fred
+- !ruby/object:Scout
+  name: George
+- !ruby/object:Scout
+  name: Sally
