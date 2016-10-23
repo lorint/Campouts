@@ -1,6 +1,6 @@
 require './repository'
 require './activity'
-# require './campout_scout'
+require './campout_scout'
 
 class Campout
   include Repository

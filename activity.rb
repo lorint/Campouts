@@ -1,4 +1,5 @@
 require './repository'
+require './campout'
 
 class Activity
   include Repository

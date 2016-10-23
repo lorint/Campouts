@@ -1,7 +1,5 @@
 require './repository'
-# require './campout_scout'
-# Mystery!!!
-# load './campout_scout.rb'
+require './campout_scout'
 
 class Scout
   include Repository

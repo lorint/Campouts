@@ -2,6 +2,7 @@ require 'yaml'
 module Repository
   # So we know when we've got everything ready
   @@to_be_loaded = {}
+  @@to_be_has_many = Hash.new([])
   @@classes_loaded = []
 
   # Find all additional classes referenced by a given YAML file
@@ -38,7 +39,7 @@ module Repository
         base.all = YAML.load_file "#{filename}.yml"
         @@classes_loaded << base
       else
-        puts "Defering #{filename}.yml until #{required_classes.keys.join(", ")} is loaded"
+        puts "Deferring #{filename}.yml until #{required_classes.keys.join(", ")} is loaded"
         @@to_be_loaded[base.name] = required_classes.keys
       end
     else
@@ -54,6 +55,14 @@ module Repository
         @@classes_loaded << klass
         @@to_be_loaded.delete(k)
       end
+    end
+    param_sets = @@to_be_has_many[base.name]
+    if param_sets
+      param_sets.each do |params|
+        puts "Now doing #{params[:primary_class].name} has_many :#{params[:foreign_symbol]}"
+        Repository::ClassMethods.build_has_many params
+      end
+      @@to_be_has_many.delete(base.name)
     end
 
     # We don't know whether our base class or YAML will go away first
@@ -118,8 +127,6 @@ module Repository
 
     # Some cool methods that add other methods for relationships!
     def has_many(foreign, options = {})
-      puts "#{self.name} has many #{foreign.to_s}"
-
       # Find class name by "singularizing" the plural foreign name
       # by simply dropping the last letter if it's "s", or by looking
       # for a :singular entry in any incoming options.
@@ -131,13 +138,29 @@ module Repository
       end
       foreign_class_name = foreign_class_snake_name.split("_").map(&:capitalize).join
       primary_snake_name = self.name.gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').gsub(/([a-z\d])([A-Z])/,'\1_\2').downcase
-      foreign_class = Object.const_get(foreign_class_name)
+      has_many_params = {foreign_class_name: foreign_class_name, foreign_symbol: foreign, primary_class: self, primary_snake_name: primary_snake_name}
+      if Object.const_defined?(foreign_class_name)
+        puts "#{self.name} has many #{foreign.to_s}"
+        Repository::ClassMethods.build_has_many has_many_params
+      else
+        puts "Deferring #{self.name} has_many :#{foreign}"
+        to_be_has_many = Repository.class_variable_get :@@to_be_has_many
+        to_be_has_many[foreign_class_name] << has_many_params
+      end
+    end
+
+    def self.build_has_many(params)
+      foreign_class = Object.const_get(params[:foreign_class_name])
 
       # Put an instance method in the class for the has_many
       # In here self is the class our mixin is being included upon.
-      self.send(:define_method, foreign) do
+      primary_class = params[:primary_class]
+      primary_class.send(:define_method, params[:foreign_symbol]) do
         # In this self means the object that relates as 1:m to foreign things
-        foreign_class.where(primary_snake_name.to_sym => self)
+        foreign_class.where(params[:primary_snake_name].to_sym => self)
+      end
+      if params[:foreign_symbol] == :campout_scouts
+        # binding.pry
       end
     end
 
